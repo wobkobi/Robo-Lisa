@@ -1,4 +1,58 @@
-/venv
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+ENV/
+venv.bak/
+env.bak/
+
+# IDE and Editor files
+.vscode/
+.idea/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+
+# Logs and temp files
+*.log
+*.pot
+*.pyc
+*.swp
+*.swo
+*.bak
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest
+.cache/
+
+# MyPy
+.mypy_cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+
+# Pycharm
+.idea/
+
+# Linux-based IDEs (like Sublime Text)
+*.sublime-workspace
+*.sublime-project
+
 .env
 test_zone.py
 training.csv

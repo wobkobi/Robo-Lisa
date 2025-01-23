@@ -1,58 +1,75 @@
-#TODO filter message:check if emoji exists. is it an emoji found within the guild? if not discard. 
-#TODO filter message pt2. :figure out what the reply is, find author of reply. 
-#TODO record message in training.csv 
-
 import re
 import emoji
+import csv
+import os
+import logging
+
+logger = logging.getLogger("LisaBotLogger")
+
 
 def is_emoji_name(text):
+    # Check if the text is a valid standard emoji.
     return text in emoji.UNICODE_EMOJI_ENGLISH
 
-def record_msg(msg, guild_emojis):
-    print("record_msg()")
 
+def emoji_check(msg, guild_emojis):
+    """Check if emoji exists in the message and if it belongs to the guild or is a standard emoji."""
+    logger.debug(f"Checking emoji existence in message: {msg.content}")
+    discord_emoji_pattern = re.compile(r":[a-zA-Z0-9_]+:")
+    matches = discord_emoji_pattern.findall(msg.content)
+
+    if matches:
+        match = matches[0][1:-1]  # Remove the colons
+        for guild_emoji in guild_emojis:
+            if guild_emoji.name == match:
+                logger.debug(f"Found matching guild emoji: {match}")
+                return True
+
+        if is_emoji_name(match):
+            logger.debug(f"Found matching standard emoji: {match}")
+            return True
+
+    logger.debug("No matching emoji found.")
+    return False
+
+
+def filter_message(msg):
+    # Filter the message to capture author, original message, and emoji reply.
+    logger.debug("Filtering message for recording.")
+    filtered_message = ""
+
+    # Check if the message is a reply
+    if msg.get_referenced_message:
+        author = msg.get_referenced_message.author.display_name
+        original_message = msg.get_referenced_message.content
+    else:
+        # Fallback for non-replied messages
+        author = msg.author.display_name
+        original_message = msg.content
+
+    # Find emoji in the message content
+    discord_emoji_pattern = re.compile(r":[a-zA-Z0-9_]+:")
+    matches = discord_emoji_pattern.findall(msg.content)
+    reply_emoji = matches[0] if matches else "None"
+
+    filtered_message = ",".join([author, original_message, reply_emoji])
+    logger.debug(f"Filtered message: {filtered_message}")
+    return filtered_message
+
+
+def record_msg(msg, guild_emojis):
+    # Record the message if it contains valid emojis.
+    logger.info("Recording a message.")
     if not emoji_check(msg, guild_emojis):
+        logger.debug("No valid emoji in message. Skipping.")
         return
 
     filtered_message = filter_message(msg)
+    file_exists = os.path.isfile("training.csv")
+    with open("training.csv", "a", newline="") as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["author", "original_message", "reply_emoji"])
+        writer.writerow(filtered_message.split(","))
 
-    with open('training.csv', 'a') as file:
-        file.write(filtered_message + '\n')
-    return
-
-# return true if emoji exists in message and if emoji is found within guild
-# need to also check for if it's a normal emoji. 
-def emoji_check(msg, guild_emojis):
-    discord_emoji_pattern = re.compile(r":[a-zA-Z0-9_]+:")
-
-    matches = discord_emoji_pattern.findall(msg.content)
-    if matches:
-        match = matches[0][1:-1]  # Remove the colons
-
-        if match:
-            # Check against guild emojis
-            for guild_emoji in guild_emojis:
-                if guild_emoji.name == match:
-                    return True
-            
-            # Check against standard emojis
-            if is_emoji_name(match):
-                return True
-
-    return False
-
-# return a line of csv's containing author, message, and lisa's reply. 
-# author,original_message,reply_emojis
-def filter_message(msg):
-    filtered_message = ""
-
-    author = msg.get_referenced_message.author
-    original_message = msg.get_referenced_message.message
-
-    discord_emoji_pattern = re.compile(r":[a-zA-Z0-9_]+:")
-    matches = discord_emoji_pattern.findall(msg.content)
-    reply_emoji = matches[0]
-
-    filtered_message = ",".join([author, original_message, reply_emoji])
-
-    return filtered_message
+    logger.info("Message recorded successfully.")
