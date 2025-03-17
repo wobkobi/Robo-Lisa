@@ -127,6 +127,8 @@ def answer_question(message):
 def response_to(message):
     reply = ""
 
+    message = message.lower()
+
     keywords = {
         "erm actually": lambda: "https://tenor.com/view/nerd-dog-nerd-dog-gif-nerd-dog-alen-orbanic-gif-15562966513664309472",
         "lisa burger": lambda: "https://media.discordapp.net/attachments/1113266262345273428/1187365137598922802/imageedit_9_9053779888.png?ex=65969ef4&is=658429f4&hm=8ea4ed39282ce942d2556cced752afcc23353607d02a60e7b5119a4ac9c8e43f&=&format=webp&quality=lossless&width=462&height=462",
@@ -138,7 +140,7 @@ def response_to(message):
     }
 
     for keyword, action in keywords.items():
-        if keyword in message:
+        if keyword.lower() in message:
             reply = action()
 
     return reply
