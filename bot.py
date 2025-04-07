@@ -228,7 +228,7 @@ async def on_message_create(event: MessageCreate):
     text = str(msg.author)[1:] + " " + text
 
     # Determine whether to skip the count and random chance check
-    skip_check = bot_mentioned or (count > 0 and random.randint(1, 15) == 1)
+    skip_check = bot_mentioned or (count > 0 and random.randint(1, 30) == 1)
     if not skip_check:
         logger.debug("Check not passed. Exiting function.")
         return  # print(f"Check not passed. Exiting function. {bot_mentioned}, {count}")
